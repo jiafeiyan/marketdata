@@ -1,0 +1,10 @@
+{
+  "simplatform_base": {
+    "user": "root",
+    "password": "111111",
+    "host": "10.189.65.64",
+    "port": 3306,
+    "database": "siminfo",
+    "pool_size": 20
+  }
+}

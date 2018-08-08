@@ -1,0 +1,8 @@
+{
+  "simplatform_base": {
+    "host": "10.189.65.70",
+    "port": "16521",
+    "password": "111111",
+    "db": 15
+  }
+}

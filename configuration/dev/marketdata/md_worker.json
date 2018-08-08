@@ -1,0 +1,9 @@
+{
+    "targetExchangeId": "stock_exchange",
+    "mysqlId": "simplatform_base",
+    "redisId": "simplatform_base",
+    "userId": "000101",
+    "password": "111111",
+    "settlementgroup": "SG01",
+    "exchange": "1"
+}

@@ -1,0 +1,7 @@
+{
+  "default" : {
+    "file_path": "",
+    "file_level": "INFO",
+    "console_level": "INFO"
+  }
+}

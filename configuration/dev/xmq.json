@@ -1,0 +1,14 @@
+{
+    "xmq_pubsub_server": {
+        "pubAddress": "tcp://*:7777",
+        "subAddress": "tcp://*:7788"
+    },
+    "UpdateMarketList": {
+        "address": "tcp://127.0.0.1:7777",
+        "topic": "UpdateMarketList"
+    },
+    "UpdateInstrument": {
+        "address": "tcp://127.0.0.1:7777",
+        "topic": "UpdateInstrument"
+    }
+}
