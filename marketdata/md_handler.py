@@ -24,6 +24,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
         self.redis = kwargs.get("redis")
         self.exchange = kwargs.get("exchange")
         self.sgid = kwargs.get("settlementgroup")
+        self.file = kwargs.get("file")
 
         self.is_connected = False
         self.is_login = False
@@ -33,6 +34,14 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
 
         self.request_id = 0
         self.lock = threading.Lock()
+
+        # 缓存csv数据
+        self.attr = dict()
+        if self.file is not None:
+            with open(self.file) as f:
+                for line in f:
+                    line = line.replace("\r\n", "").split(",")
+                    self.attr.update({line[0]: line[1]})
 
     def OnFrontConnected(self):
         self.logger.info("OnFrontConnected")
@@ -291,7 +300,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                 advValue = {
                     "ID": SecurityID,  # 合约代码
                     "MZ": InstrumentName,  # 合约名称
-                    "SX": json.dumps(pinyin(unicode(InstrumentName, "utf-8"), heteronym=True, style=pypinyin.FIRST_LETTER)),  # 缩写
+                    "SX": self.get_instrument_attr(SecurityID, InstrumentName),  # 缩写
                     "SG": self.sgid,
                     "EX": self.exchange,
                     "ZXJ": "--",  # 最新价
@@ -335,3 +344,14 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                     # ====================================================================
                 }
                 self.redis.hmset(advKey, advValue)
+
+    # 获取名称简称
+    def get_instrument_attr(self, security_id, security_name):
+        res = [[]]
+        if security_id in self.attr:
+            ins_attr = self.attr.get(security_id)
+            for i in ins_attr:
+                res[0].append(i.lower())
+        else:
+            res = pinyin(unicode(security_name, "utf-8"), heteronym=True, style=pypinyin.FIRST_LETTER)
+        return json.dumps(res)

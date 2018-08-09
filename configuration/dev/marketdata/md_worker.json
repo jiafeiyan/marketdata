@@ -5,5 +5,6 @@
     "userId": "000101",
     "password": "111111",
     "settlementgroup": "SG01",
-    "exchange": "1"
+    "exchange": "1",
+    "filepath": "/Users/chenyan/CompanyProjects/marketdata/marketdata/securites_abbr.csv"
 }

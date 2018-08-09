@@ -41,7 +41,8 @@ def start_md_service(context, conf):
                            mysql=mysqlDB,
                            redis=redis_client,
                            settlementgroup=conf.get("settlementgroup"),
-                           exchange=conf.get("exchange"))
+                           exchange=conf.get("exchange"),
+                           file=conf.get("filepath"))
 
     sql = "select TopicID from siminfo.t_marketdatatopic where SettlementGroupID = %s"
     result = mysqlDB.select(sql, (conf.get("settlementgroup"), ))
