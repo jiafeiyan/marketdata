@@ -7,8 +7,7 @@ import sys
 class RedisAdvMdResolver():
 
     def __init__(self, **kwargs):
-        self.redis = kwargs.get("redis")
-        self.mysql = kwargs.get("mysql")
+        self.redis_adv = kwargs.get("redis_adv")
         self.sgid = kwargs.get("sgid")
         self.exchange = kwargs.get("exchange")
         self.tradingday = kwargs.get("tradingDay")
@@ -98,20 +97,20 @@ class RedisAdvMdResolver():
                 "ZF": zf,  # 振幅
                 "JJ": jj,  # 均价
             }
-            self.redis.hmset(advKey, advValue)
+            self.redis_adv.hmset(advKey, advValue)
             self.xmq_market_list.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
 
     def resolve_minute_md(self, depthMD):
         if depthMD is not None:
             tradingday = self.tradingday
             security = depthMD.InstrumentID
-            pipe = self.redis.pipeline()
+            pipe = self.redis_adv.pipeline()
 
             advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
             marketDate = tradingday + depthMD.UpdateTime.replace(":", "")
             score = float(self.calcMDdate(marketDate, str(depthMD.UpdateMillisec)))
 
-            last_min_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+            last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
             if len(last_min_md) == 0:
                 cj = self.handle_num_to_str(depthMD.Volume)
             else:
@@ -163,12 +162,12 @@ class RedisAdvMdResolver():
     def resolve_5k_md(self, security):
         # 查询分钟行情
         advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
 
         # 查询5K行情
         advKey = self.rollKeyPrefix + security + ":5K_MD"
-        last_5K_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_5K_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         if len(last_5K_md) == 0:
             last_5K_md_score = None
         else:
@@ -209,7 +208,7 @@ class RedisAdvMdResolver():
                 "SJD": time,
             })
         # 存入redis
-        pipe = self.redis.pipeline()
+        pipe = self.redis_adv.pipeline()
         pipe.zremrangebyscore(advKey, time, time)
         pipe.zadd(advKey, advValue, time)
         pipe.execute()
@@ -218,12 +217,12 @@ class RedisAdvMdResolver():
     def resolve_hk_md(self, security):
         # 查询分钟行情
         advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
 
         # 查询时K行情
         advKey = self.rollKeyPrefix + security + ":HK_MD"
-        last_HK_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_HK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_HK_md) == 0:
             last_HK_md_score = None
@@ -232,7 +231,7 @@ class RedisAdvMdResolver():
             last_HK_md_score = last_HK_md[0][1]
 
         # 查询休市时间
-        tradingTime = self.redis.zrange(
+        tradingTime = self.redis_adv.zrange(
             "%s%s%s%s" % (self.advKeyPrefix, "Security:", security, ":TradingTime"), 0, -1)
         noonTime = json.loads(tradingTime[0])["JS"].decode('GBK').encode('UTF-8')[8:12]  # 中午休市时间 11:30
 
@@ -264,7 +263,7 @@ class RedisAdvMdResolver():
                 "SJD": time,
             })
         # 存入redis
-        pipe = self.redis.pipeline()
+        pipe = self.redis_adv.pipeline()
         pipe.zremrangebyscore(advKey, time, time)
         pipe.zadd(advKey, advValue, time)
         pipe.execute()
@@ -273,12 +272,12 @@ class RedisAdvMdResolver():
     def resolve_dk_md(self, security):
         # 查询分钟行情
         advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
 
         # 查询日K行情
         advKey = self.rollKeyPrefix + security + ":DK_MD"
-        last_DK_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_DK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_DK_md) == 0:
             last_DK_md_score = None
@@ -310,7 +309,7 @@ class RedisAdvMdResolver():
                 "SJD": self.tradingday,
             })
         # 存入redis
-        pipe = self.redis.pipeline()
+        pipe = self.redis_adv.pipeline()
         pipe.zremrangebyscore(advKey, self.tradingday, self.tradingday)
         pipe.zadd(advKey, advValue, self.tradingday)
         pipe.execute()
@@ -319,12 +318,12 @@ class RedisAdvMdResolver():
     def resolve_wk_md(self, security):
         # 查询分钟行情
         advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
 
         # 查询周K行情
         advKey = self.rollKeyPrefix + security + ":WK_MD"
-        last_WK_md = self.redis.zrange(name=advKey, start=-1, end=-1, withscores=True)
+        last_WK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_WK_md) == 0:
             last_WK_md_score = None
@@ -364,7 +363,7 @@ class RedisAdvMdResolver():
             })
 
         # 存入redis
-        pipe = self.redis.pipeline()
+        pipe = self.redis_adv.pipeline()
         pipe.zremrangebyscore(advKey, marketDate, marketDate)
         pipe.zadd(advKey, advValue, marketDate)
         pipe.execute()

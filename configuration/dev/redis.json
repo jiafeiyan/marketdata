@@ -1,5 +1,11 @@
 {
-  "simplatform_base": {
+  "redis_row": {
+    "host": "10.189.65.70",
+    "port": "16521",
+    "password": "111111",
+    "db": 14
+  },
+  "redis_adv": {
     "host": "10.189.65.70",
     "port": "16521",
     "password": "111111",

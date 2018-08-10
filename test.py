@@ -15,13 +15,10 @@ file = '/Users/chenyan/CompanyProjects/marketdata/marketdata/securites_abbr.csv'
 # with open(file) as f:
 #     for line in f:
 #         print line.replace("\r\n", "").split(",")
-import pypinyin
-from pypinyin import pinyin
-a = json.dumps(pinyin(unicode("行", "utf-8"), heteronym=True, style=pypinyin.FIRST_LETTER))
-print type(a)
+import time
+a = time.time()
+time.sleep(1)
+print time.time() - a
 
-a = "PFYH"
-res = [[]]
-for i in a:
-    res[0].append(i.lower())
-print type(res)
+pipe = redis_client.pipeline()
+pipe.

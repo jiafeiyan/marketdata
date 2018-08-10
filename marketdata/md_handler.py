@@ -6,7 +6,7 @@ import time
 import pypinyin
 
 from RedisAdvMdResolver import *
-from utils import log
+from utils import log, path
 from pypinyin import pinyin
 
 
@@ -21,7 +21,8 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
         self.uid = kwargs.get("uid")
         self.pwd = kwargs.get("pwd")
         self.mysql = kwargs.get("mysql")
-        self.redis = kwargs.get("redis")
+        self.redis_raw = kwargs.get("redis_raw")
+        self.redis_adv = kwargs.get("redis_adv")
         self.exchange = kwargs.get("exchange")
         self.sgid = kwargs.get("settlementgroup")
         self.file = kwargs.get("file")
@@ -38,7 +39,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
         # 缓存csv数据
         self.attr = dict()
         if self.file is not None:
-            with open(self.file) as f:
+            with open(path.convert(self.file)) as f:
                 for line in f:
                     line = line.replace("\r\n", "").split(",")
                     self.attr.update({line[0]: line[1]})
@@ -91,19 +92,19 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
             if self.context["loadTradingDay"]:
                 # 写入TradingDay
                 tradingDay = self.context["tradingDay"] = pDepthMarketData.TradingDay
-                self.redis.set(self.sgid + ":Exchange:TradingDay", tradingDay)
+                self.redis_adv.set(self.sgid + ":Exchange:TradingDay", tradingDay)
                 self.context["loadTradingDay"] = False
                 self.logger.info("TradingDay: %s", tradingDay)
 
-            self.logger.info("depth data: " + pDepthMarketData.UpdateTime + " || ExchangeID：" +
-                             str(self.exchange) + " || SecurityID：" + pDepthMarketData.InstrumentID)
+            # self.logger.info("depth data: " + pDepthMarketData.UpdateTime + " || ExchangeID：" +
+            #                str(self.exchange) + " || SecurityID：" + pDepthMarketData.InstrumentID)
 
             # 判断股票代码是否在List缓存中，如果不是写入redis与缓存
             if pDepthMarketData.InstrumentID not in self.context["securityList"]:
                 self.context["securityList"].append(pDepthMarketData.InstrumentID)
                 advListKey = self.sgid + ":" + self.context["tradingDay"] + self.ADV_KEY_PREFIX + "Security:List"
                 # 获取结果集长度
-                pipe = self.redis.pipeline()
+                pipe = self.redis_adv.pipeline()
                 pipe.zrange(advListKey, 0, -1)
                 res = pipe.execute()
                 size = len(res[0]) + 1
@@ -174,17 +175,15 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                 depthMDDict["UpdateMillisec"] = 0
 
             rawKeyPrefix = self.sgid + ":" + self.context["tradingDay"] + ":RAW:Security:" + securityID + ":LS_MD:"
-            pipe = self.redis.pipeline()
             key = "%s%s%s%s" % (
                 rawKeyPrefix, depthMDDict["UpdateTime"], ":", str(depthMDDict["UpdateMillisec"]).zfill(3))
-            pipe.hmset(key, depthMDDict)
+
+            self.redis_raw.hmset(key, depthMDDict)
 
             rawKey = rawKeyPrefix + "List"
             rawValue = key
             score = depthMDDict["UpdateTime"].replace(":", "") + str(depthMDDict["UpdateMillisec"]).zfill(3)
-            pipe.zadd(rawKey, rawValue, score)
-
-            pipe.execute()
+            self.redis_raw.zadd(rawKey, rawValue, score)
 
     def get_request_id(self):
         self.lock.acquire()
@@ -225,7 +224,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                            "TradingSegmentSN": str(TradingSegmentSN), "TradingSegmentName": str(TradingSegmentName),
                            "StartTime": str(StartTime), "InstrumentStatus": str(InstrumentStatus)}
             # 写入Raw记录
-            self.redis.hmset(
+            self.redis_raw.hmset(
                 "%s%s%s%s%s" % (rawKeyPrefix, "Security:", SecurityID, ":SEG:", str(TradingSegmentSN).zfill(3)),
                 segmentDict)
             # 写入Adv记录
@@ -239,7 +238,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                     segs[-1].update({"EndTime": tradingDay + iStartTime, "ShowEndTime": StartTime.strip()})
             if InstrumentStatus == '6':
                 advKey = advKeyPrefix + "Security:" + SecurityID + ":TradingTime"
-                pipe = self.redis.pipeline()
+                pipe = self.redis_adv.pipeline()
                 pipe.zremrangebyscore(advKey, 1, 9999)
                 for index in range(len(segs)):
                     seg = segs[index]
@@ -293,8 +292,8 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
 
             advKey = advKeyPrefix + "Security:" + SecurityID + ":MarketList"
             advNameKey = advKeyPrefix + "Security:NameList"
-            self.redis.hmset(advNameKey, {InstrumentID: InstrumentName})
-            res = self.redis.hgetall(advKey)
+            self.redis_adv.hmset(advNameKey, {InstrumentID: InstrumentName})
+            res = self.redis_adv.hgetall(advKey)
 
             if not res:
                 advValue = {
@@ -343,7 +342,7 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
                     "ZXL": MinLimitOrderVolume,  # 限价单最小下单量
                     # ====================================================================
                 }
-                self.redis.hmset(advKey, advValue)
+                self.redis_adv.hmset(advKey, advValue)
 
     # 获取名称简称
     def get_instrument_attr(self, security_id, security_name):

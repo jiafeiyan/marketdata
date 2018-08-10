@@ -3,8 +3,8 @@
         "UpdateMarketList",
         "UpdateInstrument"
     ],
-    "mysqlId": "simplatform_base",
-    "redisId": "simplatform_base",
+    "redis_row": "redis_row",
+    "redis_adv": "redis_adv",
     "settlementgroup": "SG01",
     "exchange": "1",
     "calc_step": 50

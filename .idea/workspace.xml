@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7ba4a7b7-02da-4395-9fe2-20dddf19a2ca" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/configuration/dev/marketdata/md_calc.json" beforeDir="false" afterPath="$PROJECT_DIR$/configuration/dev/marketdata/md_calc.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json" beforeDir="false" afterPath="$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configuration/dev/redis.json" beforeDir="false" afterPath="$PROJECT_DIR$/configuration/dev/redis.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py" beforeDir="false" afterPath="$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/marketdata/md_calc.py" beforeDir="false" afterPath="$PROJECT_DIR$/marketdata/md_calc.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/marketdata/md_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/marketdata/md_handler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/marketdata/md_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/marketdata/md_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/marketdata/securites_abbr.csv" beforeDir="false" afterPath="$PROJECT_DIR$/marketdata/securites_abbr.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,91 +20,92 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/marketdata$test.coverage" NAME="test Coverage Results" MODIFIED="1533785141809" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/marketdata$test.coverage" NAME="test Coverage Results" MODIFIED="1533872147393" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5865522">
-      <split-first>
-        <leaf>
-          <file leaf-file-name="RedisAdvMdResolver.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1375">
-                  <caret line="363" column="14" lean-forward="true" selection-start-line="363" selection-start-column="14" selection-end-line="363" selection-end-column="14" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="md_handler.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/marketdata/md_handler.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="270">
-                  <caret line="335" column="39" lean-forward="true" selection-start-line="335" selection-start-column="39" selection-end-line="335" selection-end-column="39" />
-                  <folding>
-                    <element signature="e#25#41#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="md_worker.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/marketdata/md_worker.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="355">
-                  <caret line="56" column="34" lean-forward="true" selection-start-line="56" selection-start-column="34" selection-end-line="56" selection-end-column="34" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="md_calc.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/marketdata/md_calc.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="404">
-                  <caret line="27" column="61" lean-forward="true" selection-start-line="21" selection-start-column="7" selection-end-line="27" selection-end-column="61" />
-                  <folding>
-                    <element signature="e#25#36#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf>
-          <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="360">
-                  <caret line="24" column="11" lean-forward="true" selection-start-line="24" selection-start-column="11" selection-end-line="24" selection-end-column="11" />
-                  <folding>
-                    <element signature="e#25#37#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="md_worker.json" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="120">
-                  <caret line="8" column="88" selection-start-line="8" selection-start-column="70" selection-end-line="8" selection-end-column="88" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="securites_abbr.csv" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/marketdata/securites_abbr.csv">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="180">
-                  <caret line="12" column="11" lean-forward="true" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf>
+      <file leaf-file-name="md_worker.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="150">
+              <caret line="10" column="1" lean-forward="true" selection-start-line="10" selection-start-column="1" selection-end-line="10" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="md_worker.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/marketdata/md_worker.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="600">
+              <caret line="47" column="40" lean-forward="true" selection-start-line="47" selection-start-column="40" selection-end-line="47" selection-end-column="40" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="md_handler.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/marketdata/md_handler.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="445">
+              <caret line="39" column="26" lean-forward="true" selection-start-line="39" selection-start-column="26" selection-end-line="39" selection-end-column="26" />
+              <folding>
+                <element signature="e#25#41#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="md_calc.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/md_calc.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" selection-start-line="5" selection-end-line="6" selection-end-column="29" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="redis.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/configuration/dev/redis.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="9" column="20" lean-forward="true" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RedisAdvMdResolver.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="233" column="36" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="md_calc.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/marketdata/md_calc.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="144">
+              <caret line="32" column="58" lean-forward="true" selection-start-line="32" selection-start-column="58" selection-end-line="32" selection-end-column="58" />
+              <folding>
+                <element signature="e#25#36#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="51" lean-forward="true" selection-start-line="5" selection-start-column="51" selection-end-line="5" selection-end-column="51" />
+              <folding>
+                <element signature="e#25#37#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -112,7 +118,27 @@
     <findStrings>
       <find>tradingTime</find>
       <find>createMarketList</find>
+      <find>is_connected</find>
+      <find>adv</find>
+      <find>redis_client</find>
+      <find>redis_read</find>
+      <find>:MarketList</find>
+      <find>(last_min_md[0][1])</find>
+      <find>mysql</find>
+      <find>mysqlDB</find>
+      <find>TERT_QUICK</find>
+      <find>logger</find>
+      <find>redis_client_write</find>
+      <find>redis_adv</find>
+      <find>redis_write</find>
+      <find>redis_raw</find>
+      <find>redis</find>
+      <find>TradingDay</find>
+      <find>self.redis.</find>
     </findStrings>
+    <replaceStrings>
+      <replace>redis_adv</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -120,13 +146,16 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/marketdata/md_calc.py" />
         <option value="$PROJECT_DIR$/configuration/dev/marketdata/load_data.json" />
         <option value="$PROJECT_DIR$/marketdata/load_data.py" />
-        <option value="$PROJECT_DIR$/marketdata/md_worker.py" />
-        <option value="$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json" />
+        <option value="$PROJECT_DIR$/configuration/dev/marketdata/md_calc.json" />
+        <option value="$PROJECT_DIR$/configuration/dev/redis.json" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/marketdata/md_calc.py" />
         <option value="$PROJECT_DIR$/marketdata/md_handler.py" />
+        <option value="$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json" />
+        <option value="$PROJECT_DIR$/marketdata/md_worker.py" />
+        <option value="$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py" />
       </list>
     </option>
   </component>
@@ -159,29 +188,6 @@
               <item name="marketdata" type="b2602c69:ProjectViewProjectNode" />
               <item name="marketdata" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="marketdata" type="b2602c69:ProjectViewProjectNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-              <item name="configuration" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="marketdata" type="b2602c69:ProjectViewProjectNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-              <item name="configuration" type="462c0819:PsiDirectoryNode" />
-              <item name="dev" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="marketdata" type="b2602c69:ProjectViewProjectNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-              <item name="configuration" type="462c0819:PsiDirectoryNode" />
-              <item name="dev" type="462c0819:PsiDirectoryNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="marketdata" type="b2602c69:ProjectViewProjectNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-              <item name="marketdata" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -190,7 +196,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SearchEverywhereHistoryKey" value="worjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;mdworjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;mdwor&#9;null&#9;null&#10;test&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/test.py" />
+    <property name="SearchEverywhereHistoryKey" value="mdworkjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;tes&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/test.py&#10;mdha&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/marketdata/md_handler.py&#10;calc&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/marketdata/md_calc.py&#10;redis&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/redis.json&#10;c&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/marketdata/md_calc.py&#10;test&#9;null&#9;null&#10;workerjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;mdworjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;md_calcjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_calc.json&#10;redisjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/redis.json&#10;worjson&#9;FILE&#9;file:///Users/chenyan/CompanyProjects/marketdata/configuration/dev/marketdata/md_worker.json&#10;mdwor&#9;null&#9;null" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -255,6 +261,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="833" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" weight="0.32880434" />
@@ -287,27 +294,10 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/marketdata/md_calc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="27" column="61" lean-forward="true" selection-start-line="21" selection-start-column="7" selection-end-line="27" selection-end-column="61" />
-          <folding>
-            <element signature="e#25#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/load_data.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
           <caret line="2" column="85" lean-forward="true" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="85" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/marketdata/securites_abbr.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="11" lean-forward="true" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
         </state>
       </provider>
     </entry>
@@ -321,44 +311,89 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py">
+    <entry file="file://$PROJECT_DIR$/marketdata/securites_abbr.csv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1375">
-          <caret line="363" column="14" lean-forward="true" selection-start-line="363" selection-start-column="14" selection-end-line="363" selection-end-column="14" />
+        <state relative-caret-position="7230">
+          <caret line="482" column="11" lean-forward="true" selection-start-line="482" selection-start-column="11" selection-end-line="482" selection-end-column="11" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/marketdata/md_worker.py">
+    <entry file="file://$PROJECT_DIR$/marketdata/shfemdapi.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="56" column="34" lean-forward="true" selection-start-line="56" selection-start-column="34" selection-end-line="56" selection-end-column="34" />
+        <state relative-caret-position="186">
+          <caret line="104" column="12" selection-start-line="104" selection-end-line="104" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="24" column="11" lean-forward="true" selection-start-line="24" selection-start-column="11" selection-end-line="24" selection-end-column="11" />
+        <state relative-caret-position="75">
+          <caret line="5" column="51" lean-forward="true" selection-start-line="5" selection-start-column="51" selection-end-line="5" selection-end-column="51" />
           <folding>
             <element signature="e#25#37#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/md_calc.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" selection-start-line="5" selection-end-line="6" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/marketdata/md_calc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="32" column="58" lean-forward="true" selection-start-line="32" selection-start-column="58" selection-end-line="32" selection-end-column="58" />
+          <folding>
+            <element signature="e#25#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/config/path_tool.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="7" column="6" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/configuration/dev/marketdata/md_worker.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="88" selection-start-line="8" selection-start-column="70" selection-end-line="8" selection-end-column="88" />
+        <state relative-caret-position="150">
+          <caret line="10" column="1" lean-forward="true" selection-start-line="10" selection-start-column="1" selection-end-line="10" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/marketdata/md_handler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="335" column="39" lean-forward="true" selection-start-line="335" selection-start-column="39" selection-end-line="335" selection-end-column="39" />
+        <state relative-caret-position="445">
+          <caret line="39" column="26" lean-forward="true" selection-start-line="39" selection-start-column="26" selection-end-line="39" selection-end-column="26" />
           <folding>
             <element signature="e#25#41#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/marketdata/md_worker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="47" column="40" lean-forward="true" selection-start-line="47" selection-start-column="40" selection-end-line="47" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/configuration/dev/redis.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="20" lean-forward="true" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/marketdata/RedisAdvMdResolver.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="233" column="36" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
         </state>
       </provider>
     </entry>

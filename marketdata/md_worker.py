@@ -25,21 +25,30 @@ def start_md_service(context, conf):
     # 建立mysql数据库连接
     mysqlDB = mysql(configs=context.get("mysql")[conf.get("mysqlId")])
 
-    # 建立redis数据库连接
-    redis_conf = context.get("redis").get(conf.get("redisId"))
+    # 建立redis RAW库
+    redis_conf = context.get("redis").get(conf.get("redis_row"))
     pool = redis.ConnectionPool(host=redis_conf.get('host'),
                                 port=redis_conf.get('port'),
                                 password=redis_conf.get('password'),
                                 db=redis_conf.get('db'))
-    redis_client = redis.Redis(connection_pool=pool)
+    redis_raw = redis.Redis(connection_pool=pool)
+
+    # 建立redis ADV库
+    redis_conf = context.get("redis").get(conf.get("redis_adv"))
+    pool = redis.ConnectionPool(host=redis_conf.get('host'),
+                                port=redis_conf.get('port'),
+                                password=redis_conf.get('password'),
+                                db=redis_conf.get('db'))
+    redis_adv = redis.Redis(connection_pool=pool)
 
     # 建立API对象
-    md_api = shfemdapi.CShfeFtdcMduserApi_CreateFtdcMduserApi()
+    md_api = shfemdapi.CShfeFtdcMduserApi_CreateFtdcMduserApi(str(conf.get("exchange")))
     md_handler = MdHandler(api=md_api,
                            uid=user_id,
                            pwd=password,
                            mysql=mysqlDB,
-                           redis=redis_client,
+                           redis_raw=redis_raw,
+                           redis_adv=redis_adv,
                            settlementgroup=conf.get("settlementgroup"),
                            exchange=conf.get("exchange"),
                            file=conf.get("filepath"))
@@ -47,7 +56,7 @@ def start_md_service(context, conf):
     sql = "select TopicID from siminfo.t_marketdatatopic where SettlementGroupID = %s"
     result = mysqlDB.select(sql, (conf.get("settlementgroup"), ))
     for topic_id in result:
-        md_api.SubscribeMarketDataTopic(topic_id[0], shfemdapi.TERT_QUICK)
+        md_api.SubscribeMarketDataTopic(topic_id[0], shfemdapi.TERT_RESTART)
 
     md_api.RegisterFront(exchange_front_addr)
     md_api.RegisterSpi(md_handler)
