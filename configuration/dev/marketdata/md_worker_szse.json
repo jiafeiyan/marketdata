@@ -1,0 +1,11 @@
+{
+    "targetExchangeId": "stock_exchange",
+    "mysqlId": "simplatform_base",
+    "redis_row": "redis_row",
+    "redis_adv": "redis_adv",
+    "userId": "TRADE01",
+    "password": "111111",
+    "settlementgroup": "SG02",
+    "exchange": "1",
+    "filepath": "${SIM_PLATFORM_HOME}/marketdata/securites_abbr.csv"
+}

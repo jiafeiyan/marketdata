@@ -1,0 +1,11 @@
+{
+    "sourceMQ": [
+        "UpdateMarketList",
+        "UpdateInstrument"
+    ],
+    "redis_row": "redis_row",
+    "redis_adv": "redis_adv",
+    "settlementgroup": "SG02",
+    "exchange": "1",
+    "calc_step": 50
+}
