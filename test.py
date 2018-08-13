@@ -3,22 +3,38 @@
 import redis
 import json
 
+from redis import WatchError
+
 pool = redis.ConnectionPool(host='192.188.188.125',
                             port='16521',
                             password='manyitsys',
-                            db=14)
+                            db=15)
 redis_client = redis.Redis(connection_pool=pool)
 
 
-file = '/Users/chenyan/CompanyProjects/marketdata/marketdata/securites_abbr.csv'
+adv = "SG01:20180725:ADV:Security:Current"
 
-# with open(file) as f:
-#     for line in f:
-#         print line.replace("\r\n", "").split(",")
-import time
-a = time.time()
-time.sleep(1)
-print time.time() - a
 
-pipe = redis_client.pipeline()
-pipe.
+def inc_and_get():
+    with redis_client.pipeline(transaction=True) as pipe:
+        while True:
+            try:
+                pipe.watch(adv)
+                current = int(pipe.get(adv))
+                print current
+                pipe.multi()
+                range_start = 1 if current is None else current
+                range_end = int(range_start) + int(2)
+                instrument_list = redis_client.zrangebyscore("SG01:20180725:ADV:Security:List", range_start, range_end - 1)
+
+                if len(instrument_list) < 2:
+                    range_end = 1
+
+                pipe.set(adv, range_end)
+                pipe.execute()
+                return instrument_list
+            except WatchError, ex:
+                print ex
+                pipe.unwatch()
+
+print inc_and_get()

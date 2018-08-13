@@ -31,15 +31,15 @@ class RedisAdvMdResolver():
     def unify_md(self, depthMD):
         # try:
         # 计算分钟行情
-        self.resolve_minute_md(depthMD)
-        # 计算所有K线图信息
-        security = depthMD.InstrumentID
-        self.resolve_5k_md(security)
-        self.resolve_hk_md(security)
-        self.resolve_dk_md(security)
-        self.resolve_wk_md(security)
-        # 发送到消息服务器
-        self.xmq_instrument.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
+        md_data = self.resolve_minute_md(depthMD)
+        if md_data is not None:
+            # 计算所有K线图信息
+            self.resolve_5k_md(md_data)
+            self.resolve_hk_md(md_data)
+            self.resolve_dk_md(md_data)
+            self.resolve_wk_md(md_data)
+            # 发送到消息服务器
+            self.xmq_instrument.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
         # except Exception as exp:
         #     print(exp)
 
@@ -157,16 +157,17 @@ class RedisAdvMdResolver():
             pipe.zremrangebyscore(advKey, score, score)
             pipe.zadd(advKey, advValue, str(score))
             pipe.execute()
+            return data
+        else:
+            return None
 
     # 5K行情
-    def resolve_5k_md(self, security):
+    def resolve_5k_md(self, md_data):
         # 查询分钟行情
-        advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
-        last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
+        last_min_md_data = md_data
 
         # 查询5K行情
-        advKey = self.rollKeyPrefix + security + ":5K_MD"
+        advKey = self.rollKeyPrefix + md_data.get("ID") + ":5K_MD"
         last_5K_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
         if len(last_5K_md) == 0:
             last_5K_md_score = None
@@ -187,7 +188,7 @@ class RedisAdvMdResolver():
         if time == last_5K_md_score:
             res = self.handle_kdata(last_5K_md_data, last_min_md_data)
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": res["OpenPrice"],
                 "SP": res["ClosePrice"],
                 "ZGJ": res["HighestPrice"],
@@ -198,7 +199,7 @@ class RedisAdvMdResolver():
             })
         else:
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": last_min_md_data["XJ"],
                 "SP": last_min_md_data["XJ"],
                 "ZGJ": last_min_md_data["XJ"],
@@ -214,14 +215,12 @@ class RedisAdvMdResolver():
         pipe.execute()
 
     # 时K行情
-    def resolve_hk_md(self, security):
+    def resolve_hk_md(self, md_data):
         # 查询分钟行情
-        advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
-        last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
+        last_min_md_data = md_data
 
         # 查询时K行情
-        advKey = self.rollKeyPrefix + security + ":HK_MD"
+        advKey = self.rollKeyPrefix + md_data.get("ID") + ":HK_MD"
         last_HK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_HK_md) == 0:
@@ -232,7 +231,7 @@ class RedisAdvMdResolver():
 
         # 查询休市时间
         tradingTime = self.redis_adv.zrange(
-            "%s%s%s%s" % (self.advKeyPrefix, "Security:", security, ":TradingTime"), 0, -1)
+            "%s%s%s%s" % (self.advKeyPrefix, "Security:", md_data.get("ID"), ":TradingTime"), 0, -1)
         noonTime = json.loads(tradingTime[0])["JS"].decode('GBK').encode('UTF-8')[8:12]  # 中午休市时间 11:30
 
         time = last_min_md_data["SJ"]
@@ -242,7 +241,7 @@ class RedisAdvMdResolver():
         if time == last_HK_md_score:
             res = self.handle_kdata(last_HK_md_data, last_min_md_data)
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": res["OpenPrice"],
                 "SP": res["ClosePrice"],
                 "ZGJ": res["HighestPrice"],
@@ -253,7 +252,7 @@ class RedisAdvMdResolver():
             })
         else:
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": last_min_md_data["XJ"],
                 "SP": last_min_md_data["XJ"],
                 "ZGJ": last_min_md_data["XJ"],
@@ -269,14 +268,12 @@ class RedisAdvMdResolver():
         pipe.execute()
 
     # 日K行情
-    def resolve_dk_md(self, security):
+    def resolve_dk_md(self, md_data):
         # 查询分钟行情
-        advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
-        last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
+        last_min_md_data = md_data
 
         # 查询日K行情
-        advKey = self.rollKeyPrefix + security + ":DK_MD"
+        advKey = self.rollKeyPrefix + md_data.get("ID") + ":DK_MD"
         last_DK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_DK_md) == 0:
@@ -288,7 +285,7 @@ class RedisAdvMdResolver():
         if self.tradingday == last_DK_md_score:
             res = self.handle_kdata(last_DK_md_data, last_min_md_data)
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": res["OpenPrice"],
                 "SP": res["ClosePrice"],
                 "ZGJ": res["HighestPrice"],
@@ -299,7 +296,7 @@ class RedisAdvMdResolver():
             })
         else:
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": last_min_md_data["XJ"],
                 "SP": last_min_md_data["XJ"],
                 "ZGJ": last_min_md_data["XJ"],
@@ -315,14 +312,12 @@ class RedisAdvMdResolver():
         pipe.execute()
 
     # 周K行情
-    def resolve_wk_md(self, security):
+    def resolve_wk_md(self, md_data):
         # 查询分钟行情
-        advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
-        last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
-        last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
+        last_min_md_data = md_data
 
         # 查询周K行情
-        advKey = self.rollKeyPrefix + security + ":WK_MD"
+        advKey = self.rollKeyPrefix + md_data.get("ID") + ":WK_MD"
         last_WK_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
 
         if len(last_WK_md) == 0:
@@ -341,7 +336,7 @@ class RedisAdvMdResolver():
         if marketDate == last_WK_md_score:
             res = self.handle_kdata(last_WK_md_data, last_min_md_data)
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": res["OpenPrice"],
                 "SP": res["ClosePrice"],
                 "ZGJ": res["HighestPrice"],
@@ -352,7 +347,7 @@ class RedisAdvMdResolver():
             })
         else:
             advValue = json.dumps({
-                "ID": security,
+                "ID": md_data.get("ID"),
                 "KP": last_min_md_data["XJ"],
                 "SP": last_min_md_data["XJ"],
                 "ZGJ": last_min_md_data["XJ"],
@@ -370,7 +365,6 @@ class RedisAdvMdResolver():
 
     # 处理K线图数据
     def handle_kdata(self, md_data, source_data):
-        md_data = json.loads(md_data, encoding="UTF-8")
         res = {"OpenPrice": md_data["KP"],
                "ClosePrice": md_data["SP"],
                "LowestPrice": md_data["ZDJ"],

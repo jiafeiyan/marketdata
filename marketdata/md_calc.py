@@ -2,10 +2,11 @@
 
 import time
 import redis
+from redis import WatchError
 
 from RedisAdvMdResolver import *
 from depthMD import depthMD
-from utils import Configuration, parse_conf_args, log, mysql, pubsub
+from utils import Configuration, parse_conf_args, log, pubsub
 
 
 class start_md_calc:
@@ -72,28 +73,13 @@ class start_md_calc:
 
         # 循环处理
         self.logger.info(" ======= 循环计算Begin ======= ")
-        current_index_key = self.sgid + ":" + tradingDay + self.ADV_KEY_PREFIX + "Security:Current"
-        instrument_list_key = self.sgid + ":" + tradingDay + self.ADV_KEY_PREFIX + "Security:List"
 
         advKeyPrefix = self.sgid + ":" + tradingDay + ":ADV:Security"
         rawKeyPrefix = self.sgid + ":" + tradingDay + ":RAW:Security"
 
         while True:
             # 计算当前进程计算合约范围
-            with self.redis_adv.pipeline(transaction=True) as pipe:
-                pipe.get(current_index_key)
-                res = pipe.execute()
-                range_start = 1 if res[0] is None else res[0]
-                range_end = int(range_start) + int(self.step)
-
-                instrument_list = self.redis_adv.zrangebyscore(instrument_list_key, range_start, range_end - 1)
-
-                if len(instrument_list) < self.step:
-                    range_end = 1
-
-                pipe.set(current_index_key, range_end)
-                pipe.execute()
-
+            instrument_list = self.inc_and_get()
             # 开始计算数据
             for security in instrument_list:
                 # ADV_List 与 RAW_List 差集为需要计算的数据
@@ -159,6 +145,7 @@ class start_md_calc:
                             self.adv.unify_md(md)
                 else:
                     # 更新所有ADV和RAW差值数据
+                    tradingTime = self.redis_adv.zrange("%s%s%s%s" % (advKeyPrefix, ":", security, ":TradingTime"), 0,-1)
                     for un in ret_list:
                         # 更新缓存记录时间
                         self.redis_adv.set(last_modified_key, self.redis_adv.time()[0])
@@ -168,7 +155,6 @@ class start_md_calc:
                         # 查询当前RAW数据
                         md = depthMD(self.redis_raw.hgetall(un[0]))
                         # 先判断股票是否结束
-                        tradingTime = self.redis_adv.zrange("%s%s%s%s" % (advKeyPrefix, ":", security, ":TradingTime"), 0, -1)
                         isTrading = False
                         UpdateTime = tradingDay + md.UpdateTime.replace(":", "") + str(md.UpdateMillisec).zfill(3)
                         for timeSpot in tradingTime:
@@ -199,7 +185,29 @@ class start_md_calc:
                         # 计算行情信息
                         self.adv.resolve_instrument_md(md)
                         self.adv.unify_md(md)
-            time.sleep(0.5)
+
+    def inc_and_get(self):
+        current_index_key = self.sgid + ":" + self.tradingDay + self.ADV_KEY_PREFIX + "Security:Current"
+        instrument_list_key = self.sgid + ":" + self.tradingDay + self.ADV_KEY_PREFIX + "Security:List"
+        with self.redis_adv.pipeline(transaction=True) as pipe:
+            while True:
+                try:
+                    pipe.watch(current_index_key)
+                    range_start = int(pipe.get(current_index_key))
+                    pipe.multi()
+                    range_start = 1 if range_start is None else range_start
+                    range_end = int(range_start) + int(self.step)
+                    instrument_list = self.redis_adv.zrangebyscore(instrument_list_key, range_start, range_end - 1)
+                    if len(instrument_list) < self.step:
+                        range_end = 1
+                    pipe.set(current_index_key, range_end)
+                    pipe.execute()
+                    return instrument_list
+                except WatchError, ex:
+                    print ex
+                    continue
+                finally:
+                    pipe.reset()
 
     def calcMDdate(self, date, milliseconds):
         diffMilli = 0
