@@ -28,23 +28,23 @@ class RedisAdvMdResolver():
         return obj
 
     # K线图以及行情统一接口
-    def unify_md(self, depthMD):
+    def unify_md(self, depthMD, _pipe):
         # try:
         # 计算分钟行情
-        md_data = self.resolve_minute_md(depthMD)
+        md_data = self.resolve_minute_md(depthMD, _pipe)
         if md_data is not None:
             # 计算所有K线图信息
-            self.resolve_5k_md(md_data)
-            self.resolve_hk_md(md_data)
-            self.resolve_dk_md(md_data)
-            self.resolve_wk_md(md_data)
+            self.resolve_5k_md(md_data, _pipe)
+            self.resolve_hk_md(md_data, _pipe)
+            self.resolve_dk_md(md_data, _pipe)
+            self.resolve_wk_md(md_data, _pipe)
             # 发送到消息服务器
             self.xmq_instrument.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
         # except Exception as exp:
         #     print(exp)
 
     # 行情信息
-    def resolve_instrument_md(self, depthMD):
+    def resolve_instrument_md(self, depthMD, _pipe):
         if depthMD is not None:
             advKey = self.advKeyPrefix + "Security:" + depthMD.InstrumentID + ":MarketList"
 
@@ -97,18 +97,17 @@ class RedisAdvMdResolver():
                 "ZF": zf,  # 振幅
                 "JJ": jj,  # 均价
             }
-            self.redis_adv.hmset(advKey, advValue)
+            _pipe.hmset(advKey, advValue)
             self.xmq_market_list.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
 
-    def resolve_minute_md(self, depthMD):
+    def resolve_minute_md(self, depthMD, _pipe):
         if depthMD is not None:
             tradingday = self.tradingday
             security = depthMD.InstrumentID
-            pipe = self.redis_adv.pipeline()
 
             advKey = self.advKeyPrefix + "Security:" + security + ":MI_MD"
             marketDate = tradingday + depthMD.UpdateTime.replace(":", "")
-            score = float(self.calcMDdate(marketDate, str(depthMD.UpdateMillisec)))
+            score = float(self.calcMDdate(tradingday, depthMD.UpdateTime, depthMD.UpdateMillisec))
 
             last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
             if len(last_min_md) == 0:
@@ -136,7 +135,7 @@ class RedisAdvMdResolver():
             zd = currentPrice - PreClosePrice
             zdf = "0.00%" if PreClosePrice == 0 else ("%.2f" % (zd * 100 / PreClosePrice)) + "%"
 
-            showTime = self.calcMDdate(marketDate, str(depthMD.UpdateMillisec))
+            showTime = str(self.calcMDdate(tradingday, depthMD.UpdateTime, depthMD.UpdateMillisec))
 
             data = {
                 "ID": depthMD.InstrumentID,  # 股票代码
@@ -154,15 +153,14 @@ class RedisAdvMdResolver():
             }
 
             advValue = json.dumps(data, ensure_ascii=False)
-            pipe.zremrangebyscore(advKey, score, score)
-            pipe.zadd(advKey, advValue, str(score))
-            pipe.execute()
+            _pipe.zremrangebyscore(advKey, score, score)
+            _pipe.zadd(advKey, advValue, str(score))
             return data
         else:
             return None
 
     # 5K行情
-    def resolve_5k_md(self, md_data):
+    def resolve_5k_md(self, md_data, _pipe):
         # 查询分钟行情
         last_min_md_data = md_data
 
@@ -209,13 +207,11 @@ class RedisAdvMdResolver():
                 "SJD": time,
             })
         # 存入redis
-        pipe = self.redis_adv.pipeline()
-        pipe.zremrangebyscore(advKey, time, time)
-        pipe.zadd(advKey, advValue, time)
-        pipe.execute()
+        _pipe.zremrangebyscore(advKey, time, time)
+        _pipe.zadd(advKey, advValue, time)
 
     # 时K行情
-    def resolve_hk_md(self, md_data):
+    def resolve_hk_md(self, md_data, _pipe):
         # 查询分钟行情
         last_min_md_data = md_data
 
@@ -262,13 +258,11 @@ class RedisAdvMdResolver():
                 "SJD": time,
             })
         # 存入redis
-        pipe = self.redis_adv.pipeline()
-        pipe.zremrangebyscore(advKey, time, time)
-        pipe.zadd(advKey, advValue, time)
-        pipe.execute()
+        _pipe.zremrangebyscore(advKey, time, time)
+        _pipe.zadd(advKey, advValue, time)
 
     # 日K行情
-    def resolve_dk_md(self, md_data):
+    def resolve_dk_md(self, md_data, _pipe):
         # 查询分钟行情
         last_min_md_data = md_data
 
@@ -306,13 +300,11 @@ class RedisAdvMdResolver():
                 "SJD": self.tradingday,
             })
         # 存入redis
-        pipe = self.redis_adv.pipeline()
-        pipe.zremrangebyscore(advKey, self.tradingday, self.tradingday)
-        pipe.zadd(advKey, advValue, self.tradingday)
-        pipe.execute()
+        _pipe.zremrangebyscore(advKey, self.tradingday, self.tradingday)
+        _pipe.zadd(advKey, advValue, self.tradingday)
 
     # 周K行情
-    def resolve_wk_md(self, md_data):
+    def resolve_wk_md(self, md_data, _pipe):
         # 查询分钟行情
         last_min_md_data = md_data
 
@@ -358,10 +350,8 @@ class RedisAdvMdResolver():
             })
 
         # 存入redis
-        pipe = self.redis_adv.pipeline()
-        pipe.zremrangebyscore(advKey, marketDate, marketDate)
-        pipe.zadd(advKey, advValue, marketDate)
-        pipe.execute()
+        _pipe.zremrangebyscore(advKey, marketDate, marketDate)
+        _pipe.zadd(advKey, advValue, marketDate)
 
     # 处理K线图数据
     def handle_kdata(self, md_data, source_data):
@@ -382,18 +372,29 @@ class RedisAdvMdResolver():
         res["TotalVolume"] += int(float(source_data["CJ"]))
         return res
 
-    def calcMDdate(self, date, milliseconds):
-        diffMilli = 0
-        diffSec = 0
-        second = date[12:14]
-        if int(milliseconds) != 0:
-            diffMilli = 1000 - int(milliseconds)
-            diffSec = 1
-        if second != "00" or diffSec == 1:
-            diffSec = 60 - int(second) - diffSec
-        date_time = datetime.datetime.strptime(date + milliseconds, "%Y%m%d%H%M%S%f")
-        date = (date_time + datetime.timedelta(seconds=diffSec, milliseconds=diffMilli)).strftime("%Y%m%d%H%M%S")
-        return date
+    # def calcMDdate(self, date, milliseconds):
+    #     diffMilli = 0
+    #     diffSec = 0
+    #     second = date[12:14]
+    #     if int(milliseconds) != 0:
+    #         diffMilli = 1000 - int(milliseconds)
+    #         diffSec = 1
+    #     if second != "00" or diffSec == 1:
+    #         diffSec = 60 - int(second) - diffSec
+    #     date_time = datetime.datetime.strptime(date + milliseconds, "%Y%m%d%H%M%S%f")
+    #     date = (date_time + datetime.timedelta(seconds=diffSec, milliseconds=diffMilli)).strftime("%Y%m%d%H%M%S")
+    #     return date
+
+    def calcMDdate(self, trading_day, update_time, milliseconds):
+        hour = update_time[0:2]
+        minute = update_time[3:5]
+        second = update_time[6:8]
+        if second != "00" or int(milliseconds) != 0:
+            minute = int(minute) + 1
+            hour = int(hour) if minute != 60 else (int(hour) + 1)
+            hour = str(hour).rjust(2, "0") if hour != 24 else "00"
+            minute = str(minute).rjust(2, "0") if minute != 60 else "00"
+        return long(trading_day + hour + minute + "00")
 
     def get_price(self, price, defaultValue):
         if (float(sys.float_info.max) == float(price)) or float(price) == 0:

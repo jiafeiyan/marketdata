@@ -77,6 +77,7 @@ class start_md_calc:
         advKeyPrefix = self.sgid + ":" + tradingDay + ":ADV:Security"
         rawKeyPrefix = self.sgid + ":" + tradingDay + ":RAW:Security"
 
+        _pipe = self.redis_adv.pipeline(transaction=False)
         while True:
             # 计算当前进程计算合约范围
             instrument_list = self.inc_and_get()
@@ -87,6 +88,7 @@ class start_md_calc:
                 lastAdv = self.redis_adv.zrange("%s%s%s%s" % (advKeyPrefix, ":", security, ":LS_MD_List"), -1, -1,
                                                    withscores=True)
                 last_modified_key = "%s%s%s%s" % (advKeyPrefix, ":", security, ":Last_Modified")
+                last_current_key = "%s%s%s%s" % (advKeyPrefix, ":", security, ":Last_Minute")
                 # 没有数据查询全部
                 lastAdvTime = 0
                 if len(lastAdv) != 0:
@@ -112,7 +114,9 @@ class start_md_calc:
                             name="%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), start=-1, end=-1,
                             withscores=True)
                         if len(last_min_md) != 0:
-                            last_min_md_score = '{:.0f}'.format(last_min_md[0][1])
+                            last_min_md_score = self.redis_adv.get(last_current_key)
+                            if last_min_md_score is None:
+                                last_min_md_score = '{:.0f}'.format(last_min_md[0][1])
                             # 3) 获取最近一条RAW数据的KEY
                             lastMD = \
                             self.redis_raw.zrange("%s%s%s%s" % (rawKeyPrefix, ":", security, ":LS_MD:List"), -1, -1)[0]
@@ -134,6 +138,8 @@ class start_md_calc:
                                 0, -1)
                             isTrading = False
                             UpdateTime = tradingDay + localscore + str(md.UpdateMillisec).zfill(3)
+                            # 休市也会累加
+                            self.redis_adv.set(last_current_key, UpdateTime)
                             for timeSpot in tradingTime:
                                 timeSpot = json.loads(timeSpot)
                                 if long(str(timeSpot["KS"]) + "000") <= long(UpdateTime) <= long(
@@ -142,7 +148,8 @@ class start_md_calc:
                             # 不在交易时间段内则跳走
                             if not isTrading:
                                 continue
-                            self.adv.unify_md(md)
+                            self.adv.unify_md(md, _pipe)
+                            _pipe.execute()
                 else:
                     # 更新所有ADV和RAW差值数据
                     tradingTime = self.redis_adv.zrange("%s%s%s%s" % (advKeyPrefix, ":", security, ":TradingTime"), 0,-1)
@@ -157,6 +164,8 @@ class start_md_calc:
                         # 先判断股票是否结束
                         isTrading = False
                         UpdateTime = tradingDay + md.UpdateTime.replace(":", "") + str(md.UpdateMillisec).zfill(3)
+                        # 休市也会累加
+                        self.redis_adv.set(last_current_key, UpdateTime)
                         for timeSpot in tradingTime:
                             timeSpot = json.loads(timeSpot)
                             if long(str(timeSpot["KS"]) + "000") <= long(UpdateTime) <= long(str(timeSpot["JS"]) + "000"):
@@ -165,7 +174,7 @@ class start_md_calc:
                         if not isTrading:
                             continue
                         # 获取UpdateTime的时间作为score
-                        score = long(self.calcMDdate(tradingDay + md.UpdateTime.replace(":", ""), str(md.UpdateMillisec)))
+                        score = self.calcMDdate(tradingDay, md.UpdateTime, md.UpdateMillisec)
                         # 和分钟时间计算相差数值
                         last_min_md = self.redis_adv.zrange(name="%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), start=-1, end=-1, withscores=True)
                         if len(last_min_md) > 0:
@@ -181,10 +190,17 @@ class start_md_calc:
                             add_time = (old_time + datetime.timedelta(minutes=i)).strftime("%H%M")
                             md.UpdateTime = str(add_time)[0:2] + ":" + str(add_time)[2:4] + ":00"
                             md.UpdateMillisec = "000"
-                            self.adv.resolve_minute_md(md)
+                            UpdateTime = tradingDay + md.UpdateTime.replace(":", "") + str(md.UpdateMillisec).zfill(3)
+                            for timeSpot in tradingTime:
+                                timeSpot = json.loads(timeSpot)
+                                if long(str(timeSpot["KS"]) + "000") <= long(UpdateTime) <= long(str(timeSpot["JS"]) + "000"):
+                                    isTrading = True
+                            if isTrading:
+                                self.adv.resolve_minute_md(md, _pipe)
                         # 计算行情信息
-                        self.adv.resolve_instrument_md(md)
-                        self.adv.unify_md(md)
+                        self.adv.resolve_instrument_md(md, _pipe)
+                        self.adv.unify_md(md, _pipe)
+                    _pipe.execute()
 
     def inc_and_get(self):
         current_index_key = self.sgid + ":" + self.tradingDay + self.ADV_KEY_PREFIX + "Security:Current"
@@ -193,9 +209,8 @@ class start_md_calc:
             while True:
                 try:
                     pipe.watch(current_index_key)
-                    range_start = int(pipe.get(current_index_key))
+                    range_start = 1 if pipe.get(current_index_key) is None else int(pipe.get(current_index_key))
                     pipe.multi()
-                    range_start = 1 if range_start is None else range_start
                     range_end = int(range_start) + int(self.step)
                     instrument_list = self.redis_adv.zrangebyscore(instrument_list_key, range_start, range_end - 1)
                     if len(instrument_list) < self.step:
@@ -209,19 +224,28 @@ class start_md_calc:
                 finally:
                     pipe.reset()
 
-    def calcMDdate(self, date, milliseconds):
-        diffMilli = 0
-        diffSec = 0
-        second = date[12:14]
-        if int(milliseconds) != 0:
-            diffMilli = 1000 - int(milliseconds)
-            diffSec = 1
-        if second != "00" or diffSec == 1:
-            diffSec = 60 - int(second) - diffSec
-        date_time = datetime.datetime.strptime(date + milliseconds, "%Y%m%d%H%M%S%f")
-        date = (date_time + datetime.timedelta(seconds=diffSec, milliseconds=diffMilli)).strftime("%Y%m%d%H%M%S")
-        return date
-
+    # def calcMDdate(self, date, milliseconds):
+    #     diffMilli = 0
+    #     diffSec = 0
+    #     second = date[12:14]
+    #     if int(milliseconds) != 0:
+    #         diffMilli = 1000 - int(milliseconds)
+    #         diffSec = 1
+    #     if second != "00" or diffSec == 1:
+    #         diffSec = 60 - int(second) - diffSec
+    #     date_time = datetime.datetime.strptime(date + milliseconds, "%Y%m%d%H%M%S%f")
+    #     date = (date_time + datetime.timedelta(seconds=diffSec, milliseconds=diffMilli)).strftime("%Y%m%d%H%M%S")
+    #     return date
+    def calcMDdate(self, trading_day, update_time, milliseconds):
+        hour = update_time[0:2]
+        minute = update_time[3:5]
+        second = update_time[6:8]
+        if second != "00" or int(milliseconds) != 0:
+            minute = int(minute) + 1
+            hour = int(hour) if minute != 60 else (int(hour) + 1)
+            hour = str(hour).rjust(2, "0") if hour != 24 else "00"
+            minute = str(minute).rjust(2, "0") if minute != 60 else "00"
+        return long(trading_day + hour + minute + "00")
 
 def main():
     base_dir, config_names, config_files, add_ons = parse_conf_args(__file__,

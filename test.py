@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 
 import redis
-import json
 
 from redis import WatchError
 
@@ -14,16 +13,13 @@ redis_client = redis.Redis(connection_pool=pool)
 
 adv = "SG01:20180725:ADV:Security:Current"
 
-
 def inc_and_get():
     with redis_client.pipeline(transaction=True) as pipe:
         while True:
             try:
                 pipe.watch(adv)
-                current = int(pipe.get(adv))
-                print current
+                range_start = 1 if pipe.get(adv) is None else int(pipe.get(adv))
                 pipe.multi()
-                range_start = 1 if current is None else current
                 range_end = int(range_start) + int(2)
                 instrument_list = redis_client.zrangebyscore("SG01:20180725:ADV:Security:List", range_start, range_end - 1)
 
