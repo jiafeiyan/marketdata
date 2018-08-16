@@ -109,7 +109,6 @@ class start_md_calc:
                     if diff > 60:
                         # 更新缓存记录时间
                         self.redis_adv.set(last_modified_key, self.redis_adv.time()[0])
-                        self.logger.info(security + "超过一分钟，写入数据")
                         last_min_md = self.redis_adv.zrange(
                             name="%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), start=-1, end=-1,
                             withscores=True)
@@ -117,6 +116,9 @@ class start_md_calc:
                             last_min_md_score = self.redis_adv.get(last_current_key)
                             if last_min_md_score is None:
                                 last_min_md_score = '{:.0f}'.format(last_min_md[0][1])
+                            elif last_min_md_score == "-1":
+                                continue
+                            self.logger.info(security + "超过一分钟，写入数据")
                             # 3) 获取最近一条RAW数据的KEY
                             lastMD = \
                             self.redis_raw.zrange("%s%s%s%s" % (rawKeyPrefix, ":", security, ":LS_MD:List"), -1, -1)[0]
@@ -145,6 +147,9 @@ class start_md_calc:
                                 if long(str(timeSpot["KS"]) + "000") <= long(UpdateTime) <= long(
                                         str(timeSpot["JS"]) + "000"):
                                     isTrading = True
+                            # 大于结束时间
+                            if long(tradingDay + localscore) >= long(json.loads(tradingTime[-1]).get("JS")):
+                                self.redis_adv.set(last_current_key, -1)
                             # 不在交易时间段内则跳走
                             if not isTrading:
                                 continue
@@ -179,28 +184,37 @@ class start_md_calc:
                         last_min_md = self.redis_adv.zrange(name="%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), start=-1, end=-1, withscores=True)
                         if len(last_min_md) > 0:
                             last_min_md_score = '{:.0f}'.format(last_min_md[0][1])
+                            last_min_md_data = json.loads(last_min_md[0][0], encoding="UTF-8")
                             new_time = datetime.datetime.strptime(str(score)[8:12], "%H%M")
                             old_time = datetime.datetime.strptime(last_min_md_score[8:12], "%H%M")
                             diff = int((new_time - old_time).total_seconds() / 60)
                         else:
                             diff = 1
-
                         for i in range(1, diff):
                             # 计算行情信息
                             add_time = (old_time + datetime.timedelta(minutes=i)).strftime("%H%M")
-                            md.UpdateTime = str(add_time)[0:2] + ":" + str(add_time)[2:4] + ":00"
-                            md.UpdateMillisec = "000"
-                            UpdateTime = tradingDay + md.UpdateTime.replace(":", "") + str(md.UpdateMillisec).zfill(3)
+                            last_min_md_data["SJ"] = last_min_md_data["SJD"] = last_min_md_data['SJ'][0:8] + add_time + last_min_md_data['SJ'][12:14]
+                            last_min_md_data["SF"] = add_time[0:2] + ":" + add_time[2:4]
+                            last_min_md_data["CJ"] = 0
+                            isTrading = False
                             for timeSpot in tradingTime:
                                 timeSpot = json.loads(timeSpot)
-                                if long(str(timeSpot["KS"]) + "000") <= long(UpdateTime) <= long(str(timeSpot["JS"]) + "000"):
+                                if long(str(timeSpot["KS"])) <= long(last_min_md_data["SJ"]) <= long(str(timeSpot["JS"])):
                                     isTrading = True
                             if isTrading:
-                                self.adv.resolve_minute_md(md, _pipe)
+                                advValue = json.dumps(last_min_md_data, ensure_ascii=False)
+                                # 写入分钟行情
+                                _pipe.zremrangebyscore("%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), last_min_md_data["SJ"], last_min_md_data["SJ"])
+                                _pipe.zadd("%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), advValue, last_min_md_data["SJ"])
+                                # 写入5K 时K 日K 周K
+                                self.adv.resolve_5k_md(last_min_md_data, _pipe)
+                                self.adv.resolve_hk_md(last_min_md_data, _pipe)
+                                self.adv.resolve_dk_md(last_min_md_data, _pipe)
+                                self.adv.resolve_wk_md(last_min_md_data, _pipe)
                         # 计算行情信息
                         self.adv.resolve_instrument_md(md, _pipe)
                         self.adv.unify_md(md, _pipe)
-                    _pipe.execute()
+                        _pipe.execute()
 
     def inc_and_get(self):
         current_index_key = self.sgid + ":" + self.tradingDay + self.ADV_KEY_PREFIX + "Security:Current"

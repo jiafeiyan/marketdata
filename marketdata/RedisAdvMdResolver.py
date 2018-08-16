@@ -183,7 +183,7 @@ class RedisAdvMdResolver():
             time = time[0:8] + calcTime
 
         # 计算K值
-        if time == last_5K_md_score:
+        if float(time) == last_5K_md_score:
             res = self.handle_kdata(last_5K_md_data, last_min_md_data)
             advValue = json.dumps({
                 "ID": md_data.get("ID"),
@@ -231,10 +231,12 @@ class RedisAdvMdResolver():
         noonTime = json.loads(tradingTime[0])["JS"].decode('GBK').encode('UTF-8')[8:12]  # 中午休市时间 11:30
 
         time = last_min_md_data["SJ"]
-        if time[8:12] != noonTime and time[10:12] != "00":
+
+        # 判断整点
+        if time[10:12] != "00" or time[8:12] == noonTime:
             time = time[0:8] + str(int(time[8:10]) + 1).zfill(2) + "0000"
 
-        if time == last_HK_md_score:
+        if float(time) == last_HK_md_score:
             res = self.handle_kdata(last_HK_md_data, last_min_md_data)
             advValue = json.dumps({
                 "ID": md_data.get("ID"),
@@ -276,7 +278,7 @@ class RedisAdvMdResolver():
             last_DK_md_data = last_DK_md[0][0]
             last_DK_md_score = last_DK_md[0][1]
 
-        if self.tradingday == last_DK_md_score:
+        if float(self.tradingday) == last_DK_md_score:
             res = self.handle_kdata(last_DK_md_data, last_min_md_data)
             advValue = json.dumps({
                 "ID": md_data.get("ID"),
@@ -325,7 +327,7 @@ class RedisAdvMdResolver():
         date_time = datetime.datetime.strptime(time[0:8], '%Y%m%d')
         marketDate = (date_time + datetime.timedelta(days=diff)).strftime("%Y%m%d")
 
-        if marketDate == last_WK_md_score:
+        if float(marketDate) == last_WK_md_score:
             res = self.handle_kdata(last_WK_md_data, last_min_md_data)
             advValue = json.dumps({
                 "ID": md_data.get("ID"),
@@ -355,6 +357,7 @@ class RedisAdvMdResolver():
 
     # 处理K线图数据
     def handle_kdata(self, md_data, source_data):
+        md_data = json.loads(md_data, encoding="UTF-8")
         res = {"OpenPrice": md_data["KP"],
                "ClosePrice": md_data["SP"],
                "LowestPrice": md_data["ZDJ"],
@@ -369,7 +372,7 @@ class RedisAdvMdResolver():
         # 更新收盘价
         res["ClosePrice"] = source_data["XJ"]
         # 更新成交量
-        res["TotalVolume"] += int(float(source_data["CJ"]))
+        res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ"])
         return res
 
     # def calcMDdate(self, date, milliseconds):

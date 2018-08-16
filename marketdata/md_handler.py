@@ -103,13 +103,12 @@ class MdHandler(shfemdapi.CShfeFtdcMduserSpi):
             if pDepthMarketData.InstrumentID not in self.context["securityList"]:
                 self.context["securityList"].append(pDepthMarketData.InstrumentID)
                 advListKey = self.sgid + ":" + self.context["tradingDay"] + self.ADV_KEY_PREFIX + "Security:List"
-                self.lock.locked()
+                self.lock.acquire()
                 try:
-                    # 获取结果集长度
                     pipe = self.redis_adv.pipeline()
-                    pipe.zrange(advListKey, 0, -1)
-                    res = pipe.execute()
-                    size = len(res[0]) + 1
+                    # 获取结果集长度
+                    size = len(self.context["securityList"])
+                    pipe.zremrangebyscore(advListKey, size, size)
                     pipe.zadd(advListKey, pDepthMarketData.InstrumentID, size)
                     pipe.execute()
                 finally:
