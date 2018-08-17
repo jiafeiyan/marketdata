@@ -37,13 +37,14 @@ adv = "SG01:20180725:ADV:Security:Current"
 
 # add_time = (old_time + datetime.timedelta(minutes=i)).strftime("%H%M")
 
-import json
-import datetime
+# 600063
 
-old_time = datetime.datetime.strptime("0931", "%H%M")
-for i in range(1, 10):
-    add_time = (old_time + datetime.timedelta(minutes=i)).strftime("%H%M")
-    print add_time
+data = {
+                "ID": "123"            }
+print data
+
+data.update({"CJ_ADD": 0})
+print data
 
 
 

@@ -148,7 +148,7 @@ class start_md_calc:
                                         str(timeSpot["JS"]) + "000"):
                                     isTrading = True
                             # 大于结束时间
-                            if long(tradingDay + localscore) >= long(json.loads(tradingTime[-1]).get("JS")):
+                            if long(tradingDay + localscore) > long(json.loads(tradingTime[-1]).get("JS")):
                                 self.redis_adv.set(last_current_key, -1)
                             # 不在交易时间段内则跳走
                             if not isTrading:
@@ -196,6 +196,7 @@ class start_md_calc:
                             last_min_md_data["SJ"] = last_min_md_data["SJD"] = last_min_md_data['SJ'][0:8] + add_time + last_min_md_data['SJ'][12:14]
                             last_min_md_data["SF"] = add_time[0:2] + ":" + add_time[2:4]
                             last_min_md_data["CJ"] = 0
+                            last_min_md_data["CJ_ADD"] = 0
                             isTrading = False
                             for timeSpot in tradingTime:
                                 timeSpot = json.loads(timeSpot)

@@ -110,6 +110,7 @@ class RedisAdvMdResolver():
             score = float(self.calcMDdate(tradingday, depthMD.UpdateTime, depthMD.UpdateMillisec))
 
             last_min_md = self.redis_adv.zrange(name=advKey, start=-1, end=-1, withscores=True)
+            cj_add = 0
             if len(last_min_md) == 0:
                 cj = self.handle_num_to_str(depthMD.Volume)
             else:
@@ -121,6 +122,8 @@ class RedisAdvMdResolver():
                 else:
                     cj = self.handle_num_to_str(
                         float(depthMD.Volume) - float(last_min_md_data['CJL']) + float(last_min_md_data['CJ']))
+                    # 同一分钟相比上一次的量差，用于计算K线图
+                    cj_add = float(depthMD.Volume) - float(last_min_md_data['CJL'])
 
             # 计算持仓量，成交量，现价，均价
             ccl = self.handle_num_to_str(self.get_price(depthMD.OpenInterest, "0"), True)
@@ -155,6 +158,7 @@ class RedisAdvMdResolver():
             advValue = json.dumps(data, ensure_ascii=False)
             _pipe.zremrangebyscore(advKey, score, score)
             _pipe.zadd(advKey, advValue, str(score))
+            data.update({"CJ_ADD": cj_add})
             return data
         else:
             return None
@@ -372,7 +376,10 @@ class RedisAdvMdResolver():
         # 更新收盘价
         res["ClosePrice"] = source_data["XJ"]
         # 更新成交量
-        res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ"])
+        if str(md_data["SJ"]) == str(source_data["SJ"]):
+            res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ_ADD"])
+        else:
+            res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ"])
         return res
 
     # def calcMDdate(self, date, milliseconds):
