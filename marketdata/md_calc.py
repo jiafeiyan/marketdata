@@ -80,7 +80,8 @@ class start_md_calc:
         _pipe = self.redis_adv.pipeline(transaction=False)
         while True:
             # 计算当前进程计算合约范围
-            instrument_list = self.inc_and_get()
+            # instrument_list = self.inc_and_get()
+            instrument_list = ['600016']
             # 开始计算数据
             for security in instrument_list:
                 # ADV_List 与 RAW_List 差集为需要计算的数据
@@ -196,7 +197,6 @@ class start_md_calc:
                             last_min_md_data["SJ"] = last_min_md_data["SJD"] = last_min_md_data['SJ'][0:8] + add_time + last_min_md_data['SJ'][12:14]
                             last_min_md_data["SF"] = add_time[0:2] + ":" + add_time[2:4]
                             last_min_md_data["CJ"] = 0
-                            last_min_md_data["CJ_ADD"] = 0
                             isTrading = False
                             for timeSpot in tradingTime:
                                 timeSpot = json.loads(timeSpot)
@@ -208,10 +208,12 @@ class start_md_calc:
                                 _pipe.zremrangebyscore("%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), last_min_md_data["SJ"], last_min_md_data["SJ"])
                                 _pipe.zadd("%s%s%s%s" % (advKeyPrefix, ":", security, ":MI_MD"), advValue, last_min_md_data["SJ"])
                                 # 写入5K 时K 日K 周K
+                                last_min_md_data["CJ_ADD"] = 0
                                 self.adv.resolve_5k_md(last_min_md_data, _pipe)
                                 self.adv.resolve_hk_md(last_min_md_data, _pipe)
                                 self.adv.resolve_dk_md(last_min_md_data, _pipe)
                                 self.adv.resolve_wk_md(last_min_md_data, _pipe)
+                                del last_min_md_data["CJ_ADD"]
                         # 计算行情信息
                         self.adv.resolve_instrument_md(md, _pipe)
                         self.adv.unify_md(md, _pipe)

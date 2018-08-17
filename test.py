@@ -4,14 +4,22 @@ import redis
 
 from redis import WatchError
 
-pool = redis.ConnectionPool(host='10.189.65.70',
+# pool = redis.ConnectionPool(host='10.189.65.70',
+#                             port='16521',
+#                             password='111111',
+#                             db=15)
+
+pool = redis.ConnectionPool(host='192.188.188.125',
                             port='16521',
-                            password='111111',
+                            password='manyitsys',
                             db=15)
+
 redis_client = redis.Redis(connection_pool=pool)
+print redis_client.get("SG01:20180802:ADV:Security:600016:Last_Minute")
 
+a = "20180808"
 
-adv = "SG01:20180725:ADV:Security:Current"
+print len(a)
 
 # def inc_and_get():
 #     with redis_client.pipeline(transaction=True) as pipe:
@@ -39,12 +47,6 @@ adv = "SG01:20180725:ADV:Security:Current"
 
 # 600063
 
-data = {
-                "ID": "123"            }
-print data
-
-data.update({"CJ_ADD": 0})
-print data
 
 
 

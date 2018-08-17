@@ -39,7 +39,7 @@ class RedisAdvMdResolver():
             self.resolve_dk_md(md_data, _pipe)
             self.resolve_wk_md(md_data, _pipe)
             # 发送到消息服务器
-            self.xmq_instrument.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
+            self.xmq_market_list.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
         # except Exception as exp:
         #     print(exp)
 
@@ -98,7 +98,7 @@ class RedisAdvMdResolver():
                 "JJ": jj,  # 均价
             }
             _pipe.hmset(advKey, advValue)
-            self.xmq_market_list.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
+            self.xmq_instrument.send({"ID": depthMD.InstrumentID, "TYPE": "tora", "SGID": self.sgid})
 
     def resolve_minute_md(self, depthMD, _pipe):
         if depthMD is not None:
@@ -293,6 +293,7 @@ class RedisAdvMdResolver():
                 "XL": res["TotalVolume"],
                 "SJ": self.tradingday,
                 "SJD": self.tradingday,
+                "MIN": last_min_md_data["SJ"]
             })
         else:
             advValue = json.dumps({
@@ -304,6 +305,7 @@ class RedisAdvMdResolver():
                 "XL": last_min_md_data["CJ"],
                 "SJ": self.tradingday,
                 "SJD": self.tradingday,
+                "MIN": last_min_md_data["SJ"]
             })
         # 存入redis
         _pipe.zremrangebyscore(advKey, self.tradingday, self.tradingday)
@@ -320,6 +322,7 @@ class RedisAdvMdResolver():
 
         if len(last_WK_md) == 0:
             last_WK_md_score = None
+            last_WK_md_data = None
         else:
             last_WK_md_data = last_WK_md[0][0]
             last_WK_md_score = last_WK_md[0][1]
@@ -330,6 +333,9 @@ class RedisAdvMdResolver():
         diff = friday - datetime.datetime.strptime(time[0:8], "%Y%m%d").weekday()
         date_time = datetime.datetime.strptime(time[0:8], '%Y%m%d')
         marketDate = (date_time + datetime.timedelta(days=diff)).strftime("%Y%m%d")
+
+        # if last_WK_md_data is not None:
+        #     print json.loads(last_WK_md_data)['XL'], last_min_md_data['CJ'], last_min_md_data['CJ_ADD']
 
         if float(marketDate) == last_WK_md_score:
             res = self.handle_kdata(last_WK_md_data, last_min_md_data)
@@ -342,6 +348,7 @@ class RedisAdvMdResolver():
                 "XL": res["TotalVolume"],
                 "SJ": self.tradingday,
                 "SJD": marketDate,
+                "MIN": time
             })
         else:
             advValue = json.dumps({
@@ -353,6 +360,7 @@ class RedisAdvMdResolver():
                 "XL": last_min_md_data["CJ"],
                 "SJ": self.tradingday,
                 "SJD": marketDate,
+                "MIN": time
             })
 
         # 存入redis
@@ -376,10 +384,14 @@ class RedisAdvMdResolver():
         # 更新收盘价
         res["ClosePrice"] = source_data["XJ"]
         # 更新成交量
+        # 日K和周K
+        if len(md_data["SJ"]) == 8:
+            md_data["SJ"] = md_data["MIN"]
         if str(md_data["SJ"]) == str(source_data["SJ"]):
             res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ_ADD"])
         else:
             res["TotalVolume"] = float(res["TotalVolume"]) + float(source_data["CJ"])
+
         return res
 
     # def calcMDdate(self, date, milliseconds):
